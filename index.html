@@ -66,6 +66,8 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       gutters: ['gutter-oldlines', 'gutter-newlines']
     });
 
+    computeDiff();
+
     function computeDiff() {
       var text1 = document.getElementById('text1').value;
       var text2 = document.getElementById('text2').value;
@@ -95,26 +97,24 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       var newLines = 0;
       var oldLines = 0;
 
-      doc.eachLine(line => {
-        var lnb = doc.getLineNumber(line);
+      diffLines.forEach((line, lnb) => {
         var op = diffLines[lnb][0];
         if (op <= 0) {
           oldLines++;
-          myCodeMirror.setGutterMarker(line, 'gutter-oldlines',
+          myCodeMirror.setGutterMarker(lnb, 'gutter-oldlines',
             document.createTextNode(oldLines));
           if (op !== 0) {
-            myCodeMirror.addLineClass(line, 'wrap', 'deleted-lines');
+            myCodeMirror.addLineClass(lnb, 'wrap', 'deleted-lines');
           }
         }
         if (op >= 0) {
           newLines++;
-          myCodeMirror.setGutterMarker(line, 'gutter-newlines',
+          myCodeMirror.setGutterMarker(lnb, 'gutter-newlines',
             document.createTextNode(newLines));
           if (op !== 0) {
-            myCodeMirror.addLineClass(line, 'wrap', 'added-lines');
+            myCodeMirror.addLineClass(lnb, 'wrap', 'added-lines');
           }
         }
-
       });
     }
 
