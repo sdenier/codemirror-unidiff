@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <title>CodeMirror Sandbox</title>
+  <meta charset="utf-8"/>
+
+  <link rel=stylesheet href="codemirror-5.14.2/lib/codemirror.css">
+  <script src="codemirror-5.14.2/lib/codemirror.js"></script>
+  <script src="codemirror-5.14.2/mode/javascript/javascript.js"></script>
+
+  <style type="text/css">
+    .newlines {
+      min-width: 30px;
+      background-color: lightgray;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <textarea id="myTextArea"></textarea>
+
+  <script type="text/javascript">
+    var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('myTextArea'), {
+      mode: 'javascript',
+      readOnly: true,
+      lineNumbers: true,
+      gutters: ['CodeMirror-linenumbers', 'newlines']
+    });
+    var doc = myCodeMirror.getDoc();
+    doc.setValue('function myScript(){return 100; }\n');
+  </script>
+
+</body>
+</html>
