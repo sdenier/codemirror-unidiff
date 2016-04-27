@@ -23,6 +23,10 @@
     .deleted-lines {
       background-color: #ffe6e6;
     }
+    .comment {
+      background-color: white;
+      border: 1px solid gray;
+    }
   </style>
 
 </head>
@@ -66,6 +70,15 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       gutters: ['gutter-oldlines', 'gutter-newlines']
     });
 
+    var comments = [];
+
+    comments[1] = 'This is a comment';
+
+    myCodeMirror.on('gutterClick', (cm, lnb, gutter, e) => {
+      comments[lnb] = 'Hello world ' + lnb + ' ' + gutter;
+      displayComment(cm, lnb, comments[lnb]);
+    });
+
     computeDiff();
 
     function computeDiff() {
@@ -104,7 +117,7 @@ From wicked puns and stupid jokes to anvils that drop on your head.
           myCodeMirror.setGutterMarker(lnb, 'gutter-oldlines',
             document.createTextNode(oldLines));
           if (op !== 0) {
-            myCodeMirror.addLineClass(lnb, 'wrap', 'deleted-lines');
+            myCodeMirror.addLineClass(lnb, 'background', 'deleted-lines');
           }
         }
         if (op >= 0) {
@@ -112,10 +125,24 @@ From wicked puns and stupid jokes to anvils that drop on your head.
           myCodeMirror.setGutterMarker(lnb, 'gutter-newlines',
             document.createTextNode(newLines));
           if (op !== 0) {
-            myCodeMirror.addLineClass(lnb, 'wrap', 'added-lines');
+            myCodeMirror.addLineClass(lnb, 'background', 'added-lines');
           }
         }
+
+        var lineComment = comments[lnb];
+        if (lineComment) {
+          displayComment(myCodeMirror, lnb, lineComment);
+        }
       });
+    }
+
+    function displayComment(cm, lnb, comment) {
+      var elt = document.createElement('div');
+      elt.innerHTML = comment;
+      elt.classList.add('comment');
+      cm.addLineWidget(lnb, elt, {
+          coverGutter: true
+        });
     }
 
   </script>
