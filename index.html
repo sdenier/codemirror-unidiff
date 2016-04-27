@@ -28,8 +28,18 @@
       lineNumbers: true,
       gutters: ['CodeMirror-linenumbers', 'newlines']
     });
+
+    myCodeMirror.on('renderLine', (cm, line, elt) => {
+      // console.log(line, elt);
+    });
+
     var doc = myCodeMirror.getDoc();
-    doc.setValue('function myScript(){return 100; }\n');
+    doc.setValue('function myScript(){\nreturn 100;\n }\n');
+
+    doc.eachLine(line => {
+      var lnb = doc.getLineNumber(line);
+      myCodeMirror.setGutterMarker(line, 'newlines', document.createTextNode(lnb * 2));
+    });
   </script>
 
 </body>
