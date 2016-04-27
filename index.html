@@ -77,7 +77,8 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       showCommentForm(cm, lnb);
     });
 
-    computeDiff();
+    var diff = computeDiff();
+    updateCodeMirror(myCodeMirror, diff);
     displayPreviousComments(myCodeMirror);
 
     function computeDiff() {
@@ -90,11 +91,11 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       dmp.diff_charsToLines_(diff, lines.lineArray);
 
       document.getElementById('diff').innerHTML = dmp.diff_prettyHtml(diff);
-      updateCodeMirror(diff);
+      return diff;
     }
 
-    function updateCodeMirror(diff) {
-      var doc = myCodeMirror.getDoc();
+    function updateCodeMirror(cm, diff) {
+      var doc = cm.getDoc();
 
       diffLines = diff.map(d => {
         var lineByLine = d[1].split('\n').slice(0, -1);
@@ -113,18 +114,18 @@ From wicked puns and stupid jokes to anvils that drop on your head.
         var op = diffLines[lnb][0];
         if (op <= 0) {
           oldLines++;
-          myCodeMirror.setGutterMarker(lnb, 'gutter-oldlines',
+          cm.setGutterMarker(lnb, 'gutter-oldlines',
             document.createTextNode(oldLines));
           if (op !== 0) {
-            myCodeMirror.addLineClass(lnb, 'background', 'deleted-lines');
+            cm.addLineClass(lnb, 'background', 'deleted-lines');
           }
         }
         if (op >= 0) {
           newLines++;
-          myCodeMirror.setGutterMarker(lnb, 'gutter-newlines',
+          cm.setGutterMarker(lnb, 'gutter-newlines',
             document.createTextNode(newLines));
           if (op !== 0) {
-            myCodeMirror.addLineClass(lnb, 'background', 'added-lines');
+            cm.addLineClass(lnb, 'background', 'added-lines');
           }
         }
       });
@@ -141,7 +142,7 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       elt.querySelector('input[type="submit"]').addEventListener('click', e => {
         e.preventDefault();
         var commentText = elt.querySelector('textarea').value;
-        postComment(lnb, commentText);
+        postComment(cm, lnb, commentText);
         commentWidget.clear();
       });
 
@@ -151,11 +152,11 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       });
     }
 
-    function postComment(lnb, commentText) {
+    function postComment(cm, lnb, commentText) {
       comments[lnb] = (comments[lnb] || [])
       comments[lnb].push(commentText);
       console.log(comments);
-      displayComment(myCodeMirror, lnb, commentText);
+      displayComment(cm, lnb, commentText);
     }
 
     function displayComment(cm, lnb, comment) {
@@ -167,10 +168,10 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       });
     }
 
-    function displayPreviousComments(myCodeMirror) {
+    function displayPreviousComments(cm) {
       comments.forEach((lineComments, i) => {
         lineComments.forEach(comment => {
-          displayComment(myCodeMirror, i, comment);
+          displayComment(cm, i, comment);
         });
       });
     }
