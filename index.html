@@ -71,15 +71,14 @@ From wicked puns and stupid jokes to anvils that drop on your head.
     });
 
     var comments = [];
-
-    comments[1] = 'This is a comment';
+    comments[0] = ['First!', 'Second!'];
 
     myCodeMirror.on('gutterClick', (cm, lnb, gutter, e) => {
-      comments[lnb] = 'Hello world ' + lnb + ' ' + gutter;
-      displayComment(cm, lnb, comments[lnb]);
+      showCommentForm(cm, lnb);
     });
 
     computeDiff();
+    displayPreviousComments(myCodeMirror);
 
     function computeDiff() {
       var text1 = document.getElementById('text1').value;
@@ -128,12 +127,35 @@ From wicked puns and stupid jokes to anvils that drop on your head.
             myCodeMirror.addLineClass(lnb, 'background', 'added-lines');
           }
         }
-
-        var lineComment = comments[lnb];
-        if (lineComment) {
-          displayComment(myCodeMirror, lnb, lineComment);
-        }
       });
+    }
+
+    function showCommentForm(cm, lnb) {
+      var elt = document.createElement('form');
+      elt.innerHTML = '<textarea></textarea><input type="submit" value="Post"><input type="button" value="Cancel">';
+      elt.classList.add('comment');
+      var commentWidget = cm.addLineWidget(lnb, elt, {
+        coverGutter: true
+      });
+
+      elt.querySelector('input[type="submit"]').addEventListener('click', e => {
+        e.preventDefault();
+        var commentText = elt.querySelector('textarea').value;
+        postComment(lnb, commentText);
+        commentWidget.clear();
+      });
+
+      elt.querySelector('input[type="button"]').addEventListener('click', e => {
+        // e.preventDefault();
+        commentWidget.clear();
+      });
+    }
+
+    function postComment(lnb, commentText) {
+      comments[lnb] = (comments[lnb] || [])
+      comments[lnb].push(commentText);
+      console.log(comments);
+      displayComment(myCodeMirror, lnb, commentText);
     }
 
     function displayComment(cm, lnb, comment) {
@@ -141,8 +163,16 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       elt.innerHTML = comment;
       elt.classList.add('comment');
       cm.addLineWidget(lnb, elt, {
-          coverGutter: true
+        coverGutter: true
+      });
+    }
+
+    function displayPreviousComments(myCodeMirror) {
+      comments.forEach((lineComments, i) => {
+        lineComments.forEach(comment => {
+          displayComment(myCodeMirror, i, comment);
         });
+      });
     }
 
   </script>
