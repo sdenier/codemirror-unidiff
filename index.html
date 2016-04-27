@@ -6,13 +6,22 @@
 
   <link rel=stylesheet href="codemirror-5.14.2/lib/codemirror.css">
   <script src="codemirror-5.14.2/lib/codemirror.js"></script>
-  <script src="codemirror-5.14.2/mode/javascript/javascript.js"></script>
+  <!-- // <script src="codemirror-5.14.2/mode/javascript/javascript.js"></script> -->
   <script src="diff_match_patch_20121119/javascript/diff_match_patch_uncompressed.js"></script>
 
   <style type="text/css">
-    .newlines {
+    .gutter-oldlines {
+      min-width: 30px;
+    }
+    .gutter-newlines {
       min-width: 30px;
       background-color: lightgray;
+    }
+    .added-lines {
+      background-color: #e6ffe6;
+    }
+    .deleted-lines {
+      background-color: #ffe6e6;
     }
   </style>
 
@@ -24,51 +33,38 @@
     <textarea id="myTextArea"></textarea>
   </div>
 
-  <script type="text/javascript">
-    var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('myTextArea'), {
-      mode: 'javascript',
-      readOnly: true,
-      lineNumbers: true,
-      gutters: ['CodeMirror-linenumbers', 'newlines']
-    });
-
-    myCodeMirror.on('renderLine', (cm, line, elt) => {
-      // console.log(line, elt);
-    });
-
-    var doc = myCodeMirror.getDoc();
-    doc.setValue('function myScript(){\nreturn 100;\n }\n');
-
-    doc.eachLine(line => {
-      var lnb = doc.getLineNumber(line);
-      myCodeMirror.setGutterMarker(line, 'newlines', document.createTextNode(lnb * 2));
-    });
-  </script>
-
   <hr/>
 
   <div>
     <textarea id="text1" cols="50" rows="5">
+I am the very model of a cartoon individual,
 I am the very model of a modern Major-General,
 I've information vegetable, animal, and mineral,
 My animation's comical, unusual, and whimsical,
 I know the kings of England, and I quote the fights historical,
 From Marathon to Waterloo, in order categorical.
-    </textarea>
+</textarea>
 
     <textarea id="text2" cols="50" rows="5">
 I am the very model of a cartoon individual,
 My animation's comical, unusual, and whimsical,
 I'm quite adept at funny gags, comedic theory I have read,
 From wicked puns and stupid jokes to anvils that drop on your head.
-    </textarea>
+</textarea>
   </div>
 
-  <button onclick="computeDiff()">Compute Diff</button>
+  <div>
+    <button onclick="computeDiff()">Compute Diff</button>
+  </div>
 
   <div id="diff"></div>
 
   <script type="text/javascript">
+    var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('myTextArea'), {
+      readOnly: true,
+      gutters: ['gutter-oldlines', 'gutter-newlines']
+    });
+
     function computeDiff() {
       var text1 = document.getElementById('text1').value;
       var text2 = document.getElementById('text2').value;
@@ -79,7 +75,48 @@ From wicked puns and stupid jokes to anvils that drop on your head.
       dmp.diff_charsToLines_(diff, lines.lineArray);
 
       document.getElementById('diff').innerHTML = dmp.diff_prettyHtml(diff);
+      updateCodeMirror(diff);
     }
+
+    function updateCodeMirror(diff) {
+      var doc = myCodeMirror.getDoc();
+
+      diffLines = diff.map(d => {
+        var lineByLine = d[1].split('\n').slice(0, -1);
+        return lineByLine.map(l => [d[0], l]);
+      }).reduce((a, b) => a.concat(b), []);
+
+      console.log(diffLines)
+
+      var text = diffLines.map(d => d[1]).join('\n');
+      doc.setValue(text);
+
+      var newLines = 0;
+      var oldLines = 0;
+
+      doc.eachLine(line => {
+        var lnb = doc.getLineNumber(line);
+        var op = diffLines[lnb][0];
+        if (op <= 0) {
+          oldLines++;
+          myCodeMirror.setGutterMarker(line, 'gutter-oldlines',
+            document.createTextNode(oldLines));
+          if (op !== 0) {
+            myCodeMirror.addLineClass(line, 'wrap', 'deleted-lines');
+          }
+        }
+        if (op >= 0) {
+          newLines++;
+          myCodeMirror.setGutterMarker(line, 'gutter-newlines',
+            document.createTextNode(newLines));
+          if (op !== 0) {
+            myCodeMirror.addLineClass(line, 'wrap', 'added-lines');
+          }
+        }
+
+      });
+    }
+
   </script>
 
 </body>
